@@ -1,0 +1,17 @@
+﻿using CDR.Entities.Dtos;
+using CDR.Shared.Utilities.Results.Abstract;
+using CDR.Shared.Utilities.Results.ComplexTypes;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace CDR.Services.Abstract
+{
+    public interface IContentService
+    {
+        Task<IDataResult<ContentDto>> GetAsync(Enums.Content Type);
+        Task<IDataResult<ContentDto>> GetGlobalAsync(Enums.Content Type);
+    }
+}

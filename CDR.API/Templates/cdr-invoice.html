@@ -1,0 +1,127 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <title>Invoice</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+        }
+
+        h1 {
+            font-size: 24px;
+            margin-bottom: 20px;
+        }
+
+        .row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 20px;
+        }
+
+        .column {
+            flex: 1;
+        }
+
+        .logo {
+            width: 100px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th, td {
+            padding: 10px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+
+        th {
+            background-color: #f5f5f5;
+            border-radius: 5px;
+        }
+
+        .total {
+            font-weight: bold;
+        }
+
+        .summary {
+            text-align: right;
+        }
+    </style>
+</head>
+<body>
+    <div class="row">
+        <div class="column" style="display:flex; align-items:center">
+            <img src="https://cdrcloud.com/assets/images/K2M-logo-dark.png" alt="Company Logo">
+            <h4 style="display: inline-block; margin-left: 10px;">K2M Bilisim Bilgisayar Ltd. Şti.</h4>
+        </div>
+        <div class="column">
+            <h1>Invoice: @InvoiceNumber</h1>
+            <p style="color:gray">Issued on: @IssuedOnDate</p>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="column">
+            <h2>From</h2>
+            <p>K2M Bilisim Bilgisayar Ltd. Şti.</p>
+            <p>Altievler Mah. Halide Edip Adivar Sok. No.1</p>
+            <p>35320 Narlıdere</p>
+            <p>Turkey</p>
+            <p>marketing@k2msoftware.com</p>
+            <p>+90 (232) 320 00 20</p>
+        </div>
+        <div class="column">
+            <h2>To</h2>
+            <p>@CustomerName</p>
+            <p>@CustomerAddress</p>
+            <p>@CustomerMail</p>
+        </div>
+    </div>
+    <div class="row">
+        <table>
+            <tr>
+                <th>Product</th>
+                <th>Quantity</th>
+                <th>Unit Price</th>
+                <th>Tax</th>
+                <th>Total</th>
+            </tr>
+            <tr>
+                <td>@ProductName (@Period)</td>
+                <td>@Quantity</td>
+                <td>@UnitPrice (@Currency)</td>
+                <td>@Tax (@Currency)</td>
+                <td>@Total (@Currency)</td>
+            </tr>
+        </table>
+    </div>
+
+    <div class="row summary">
+        <div class="column"></div>
+        <div class="column">
+            <table>
+                <tr>
+                    <th colspan="2">Summary</th>
+                </tr>
+                <tr>
+                    <td>Subtotal:</td>
+                    <td>@Subtotal (@Currency)</td>
+                </tr>
+                <tr>
+                    <td>Tax:</td>
+                    <td>@Tax (@Currency)</td>
+                </tr>
+                <tr>
+                    <td>Total:</td>
+                    <td>@Total (@Currency)</td>
+                </tr>
+            </table>
+        </div>
+    </div>
+</body>
+</html>
