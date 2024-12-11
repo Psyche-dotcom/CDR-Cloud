@@ -114,12 +114,12 @@ optionBuilder.UseSqlServer(builder.Configuration.GetConnectionString("DefaultCon
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
-if (app.Environment.IsDevelopment())
-{
+/*if (app.Environment.IsDevelopment())
+{*/
     app.UseCors();
     app.UseSwagger();
     app.UseSwaggerUI();
-}
+/*}*/
 
 
 IList<CultureInfo> supportedCultures = new List<CultureInfo>
