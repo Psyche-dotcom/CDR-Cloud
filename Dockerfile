@@ -1,5 +1,5 @@
 # Use the official ASP.NET Core runtime as a base image
-FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS base
+FROM mcr.microsoft.com/dotnet/aspnet:6.0 AS base
 WORKDIR /app
 
 # Set the PORT environment variable
