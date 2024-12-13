@@ -21,7 +21,7 @@ using System.Text.Json;
 namespace CDR.API.Controllers
 {
     [Authorize(AuthenticationSchemes = "Bearer")]
-    [Route("api/memebership")]
+    [Route("api/membership")]
     [ApiController]
     public class MembershipController : ControllerBase
     {
