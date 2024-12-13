@@ -221,7 +221,7 @@ namespace CDR.API.Controllers
                 request.Currency = culture.Name.Equals("tr-TR") ? Currency.TRY.ToString() : (deposit.Data.Package.Currency == (byte)Enums.Currency.DOLAR ? Currency.USD.ToString() : Currency.EUR.ToString());
                 request.BasketId = deposit.Data.PublicId.ToString();
                 request.PaymentGroup = PaymentGroup.PRODUCT.ToString();
-                request.CallbackUrl = _iyzicoSettings.DomainUrl + _iyzicoSettings.CallSubpartUrl + "dashboard/membership/comfirm";
+                request.CallbackUrl = _iyzicoSettings.DomainUrl + _iyzicoSettings.CallSubpartUrl + "/dashboard/membership/comfirm";
 
                 List<int> enabledInstallments = new List<int>();
                 enabledInstallments.Add(2);
@@ -274,8 +274,8 @@ namespace CDR.API.Controllers
                 request.BasketItems = basketItems;
 
                 CheckoutFormInitialize checkoutFormInitialize = CheckoutFormInitialize.Create(request, options);
-
-                HttpContext.Session.SetString("Deposit", deposit.Data.PublicId.ToString());
+/*
+                HttpContext.Session.SetString("Deposit", deposit.Data.PublicId.ToString());*/
 
                 return Ok(PartialViewGen.GenerateMembershipCreditCardHtml(new MembershipCreditCardModel
                 {
