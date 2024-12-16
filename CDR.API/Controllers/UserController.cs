@@ -188,7 +188,7 @@ namespace CDR.API.Controllers
                         {
                             response.StatusCode = 200;
                             response.DisplayMessage = "Success";
-                            response.Result = await _generateJwt.GenerateToken(user);
+                            response.Result = await _generateJwt.GenerateToken(user2);
                             return Ok(response);
                         }
                         else
