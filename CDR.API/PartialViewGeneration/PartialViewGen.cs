@@ -1541,7 +1541,108 @@ namespace CDR.API.PartialViewGeneration
             return sb.ToString();
         }
 
+        public static string GenerateCompanyUserDetailHtml(CompanyUserDetailTopSixNumberModel model, IStaticService staticService)
+        {
+            var sb = new StringBuilder();
 
+            sb.AppendLine("<table class=\"last-call-statistic\">");
+            sb.AppendLine("<tbody>");
+
+            if (model.DataList != null && model.DataList.Count > 0)
+            {
+                foreach (var item in model.DataList)
+                {
+                    sb.AppendLine("<tr>");
+                    sb.AppendFormat("<td><strong>{0}</strong></td>", item.phonenumber);
+                    sb.AppendFormat("<td>{0}</td>", item.displayname);
+                    sb.AppendFormat("<td>{0} {1}</td>", item.numofcalls, staticService.GetLocalization("CDR_call").Data);
+                    sb.AppendLine("</tr>");
+                }
+            }
+            else
+            {
+                sb.AppendLine("<tr>");
+                sb.AppendFormat("<td colspan=\"3\">{0}</td>", staticService.GetLocalization("CDR_VeriBulunamadi").Data);
+                sb.AppendLine("</tr>");
+            }
+
+            sb.AppendLine("</tbody>");
+            sb.AppendLine("</table>");
+
+            return sb.ToString();
+        }
+
+        public static string GenerateCompanyUserDetailTopSixNumberModel(CompanyUserDetailTopSixNumberModel model, IStaticService staticService)
+        {
+            var sb = new StringBuilder();
+
+            // Begin table
+            sb.AppendLine("<table class=\"last-call-statistic\">");
+            sb.AppendLine("<tbody>");
+
+            if (model.DataList != null && model.DataList.Count > 0)
+            {
+                // Generate rows for each data item
+                foreach (var item in model.DataList)
+                {
+                    sb.AppendLine("<tr>");
+                    sb.AppendFormat("<td><strong>{0}</strong></td>", item.phonenumber);
+                    sb.AppendFormat("<td>{0}</td>", item.displayname);
+                    sb.AppendFormat("<td>{0} {1}</td>", item.numofcalls, staticService.GetLocalization("CDR_call").Data);
+                    sb.AppendLine("</tr>");
+                }
+            }
+            else
+            {
+                // No data available
+                sb.AppendLine("<tr>");
+                sb.AppendFormat("<td colspan=\"3\">{0}</td>", staticService.GetLocalization("CDR_VeriBulunamadi").Data);
+                sb.AppendLine("</tr>");
+            }
+
+            // Close table
+            sb.AppendLine("</tbody>");
+            sb.AppendLine("</table>");
+
+            return sb.ToString();
+        }
+
+        public static string GenerateCompanyUserDetailTopSixNumberHtml(CompanyUserDetailTopSixNumberModel model, IStaticService staticService)
+        {
+            var sb = new StringBuilder();
+
+            sb.AppendLine("<table class=\"last-call-statistic\">");
+            sb.AppendLine("<tbody>");
+
+            // Check if there is data in the model
+            if (model.DataList != null && model.DataList.Count > 0)
+            {
+                // Iterate through the data list to create rows
+                foreach (var item in model.DataList)
+                {
+                    sb.AppendLine("<tr>");
+                    sb.AppendFormat("<td><strong>{0}</strong></td>", item.phonenumber);
+                    sb.AppendFormat("<td>{0}</td>", item.displayname);
+                    sb.AppendFormat("<td>{0} {1}</td>",
+                        item.numofcalls,
+                        staticService.GetLocalization("CDR_call").Data);
+                    sb.AppendLine("</tr>");
+                }
+            }
+            else
+            {
+                // Handle the case where there is no data
+                sb.AppendLine("<tr>");
+                sb.AppendFormat("<td colspan=\"3\">{0}</td>",
+                    staticService.GetLocalization("CDR_VeriBulunamadi").Data);
+                sb.AppendLine("</tr>");
+            }
+
+            sb.AppendLine("</tbody>");
+            sb.AppendLine("</table>");
+
+            return sb.ToString();
+        }
 
         private static string GetFormattedDuration(TimeSpan duration)
         {

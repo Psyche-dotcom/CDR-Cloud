@@ -1,7 +1,6 @@
 ﻿using AutoMapper;
 using CDR.API.Api.Model;
 using CDR.API.Api.Service.Interface;
-using CDR.API.Filters;
 using CDR.API.PartialViewGeneration;
 using CDR.Entities.Concrete;
 using CDR.Entities.Dtos;
@@ -14,7 +13,6 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
 using System.IdentityModel.Tokens.Jwt;
-using System.Text;
 
 
 namespace CDR.API.Controllers
@@ -47,11 +45,11 @@ namespace CDR.API.Controllers
             _userManager = userManager;
             _mapper = mapper;
             _staticService = staticService;
-           _userService = userService;
+            _userService = userService;
         }
 
 
-     
+
         //[ServiceFilter(typeof(ValidationFilterAttribute))]
 
         [HttpPost("info/dashboard")]
@@ -71,8 +69,8 @@ namespace CDR.API.Controllers
 
 
 
-        }  
-        
+        }
+
         [HttpGet("info/dashboard/user")]
         public async Task<IActionResult> InfoUser()
         {
@@ -269,7 +267,7 @@ namespace CDR.API.Controllers
             else
                 _filters = (int)Enums.ConsoleQueryType.DASHBOARD_INBOUND_YEARLY;
 
-            var query =  _staticService.GetQueries(LoggedInUser(userId), (Enums.ConsoleQueryType)_filters);
+            var query = _staticService.GetQueries(LoggedInUser(userId), (Enums.ConsoleQueryType)_filters);
 
             if (query.ResultStatus == ResultStatus.Success)
             {
@@ -286,9 +284,9 @@ namespace CDR.API.Controllers
             else
             {
                 var emptyContent = "<p class=\"pt-1\">No data available for the selected time range.</p>";
-                return Ok( emptyContent );
+                return Ok(emptyContent);
             }
-               
+
         }
 
         [HttpGet("DashboardMostAnswered")]
@@ -554,7 +552,7 @@ namespace CDR.API.Controllers
             public string Value { get; set; }
         }
         protected User LoggedInUser(string id) => _userManager.FindByIdAsync(id).Result;
-       
+
 
 
 

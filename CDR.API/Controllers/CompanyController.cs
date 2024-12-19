@@ -752,9 +752,6 @@ namespace CDR.API.Controllers
             return File(memory, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", sFileName);
 
         }
-
-
-
         [HttpPost("GetUsers")]
         public async Task<IActionResult> GetUsers()
         {
@@ -1114,8 +1111,182 @@ namespace CDR.API.Controllers
             return Ok(excelErrorModel);
         }
 
+        [HttpPost("GetUserDetaiReport")]
+        public async Task<IActionResult> GetUserDetaiReport(string id, byte _f)
+        {
+            var userId = User.Claims.FirstOrDefault(c => c.Type == JwtRegisteredClaimNames.Jti).Value;
+            var detail = await _postgreSqlService.GetCompanyPersonDetailReportList(LoggedInUser(userId), id, (Shared.Utilities.Results.ComplexTypes.Enums.CallInfoFilter)_f);
+
+            if (detail.ResultStatus == ResultStatus.Success)
+            {
+                TimeSpan gmtTime = BaseExtensions.GetGmtTime(LoggedInUser(userId).GMT);
+
+                foreach (var item in detail.Data.DataList)
+                {
+                    item.starttime = item.starttime.Add(gmtTime);
+                    item.stoptime = item.stoptime.Add(gmtTime);
+                }
+
+                return Ok(new
+                {
+                    detail.Data.DataList
+                });
+            }
+            else
+                return Ok(detail.Data);
+        }
+        [HttpGet("ExportCompanyUserDetaiReport")]
+        public async Task<IActionResult> ExportCompanyUserDetaiReport(string id, byte f)
+        {
+            var userId = User.Claims.FirstOrDefault(c => c.Type == JwtRegisteredClaimNames.Jti).Value;
+            string sWebRootFolder = Path.Combine(_env.WebRootPath, "UploadExcel");
+            string sFileName = @"call-list-" + string.Format("{0:ddMMyyyyHHmmss}", DateTime.Now) + "-" + Shared.Utilities.Extensions.BaseExtensions.GetUniqueKey(10) + ".xlsx";
+            FileInfo file = new FileInfo(sWebRootFolder);
+            var memory = new MemoryStream();
+            using (var fs = new FileStream(Path.Combine(sWebRootFolder, sFileName), FileMode.Create, FileAccess.Write))
+            {
+                IWorkbook workbook;
+                workbook = new XSSFWorkbook();
+                ISheet excelSheet = workbook.CreateSheet("call");
+
+                int _row = 0;
+
+                IRow row = excelSheet.CreateRow(_row);
+                row.CreateCell(0).SetCellValue(_staticService.GetLocalization("CDR_CallId").Data);
+                row.CreateCell(1).SetCellValue(_staticService.GetLocalization("CDR_From").Data);
+                row.CreateCell(2).SetCellValue(_staticService.GetLocalization("CDR_To").Data);
+                row.CreateCell(3).SetCellValue(_staticService.GetLocalization("CDR_Duration").Data);
+                row.CreateCell(4).SetCellValue(_staticService.GetLocalization("CDR_TalkTime").Data);
+                row.CreateCell(5).SetCellValue(_staticService.GetLocalization("CDR_RingTime").Data);
+                row.CreateCell(6).SetCellValue(_staticService.GetLocalization("CDR_Date").Data);
+                row.CreateCell(7).SetCellValue(_staticService.GetLocalization("CDR_StartTime").Data);
+                row.CreateCell(8).SetCellValue(_staticService.GetLocalization("CDR_StopTime").Data);
+                row.CreateCell(9).SetCellValue(_staticService.GetLocalization("CDR_Type").Data);
+                row.CreateCell(10).SetCellValue(_staticService.GetLocalization("CDR_Status").Data);
+
+                var data = await _postgreSqlService.GetCompanyPersonDetailReportList(LoggedInUser(userId), id, (Shared.Utilities.Results.ComplexTypes.Enums.CallInfoFilter)f);
+
+                TimeSpan gmtTime = BaseExtensions.GetGmtTime(LoggedInUser(userId).GMT);
+
+                foreach (var item in data.Data.DataList)
+                {
+                    ++_row;
+
+                    row = excelSheet.CreateRow(_row);
+                    row.CreateCell(0).SetCellValue(item.call_id);
+                    row.CreateCell(1).SetCellValue(item.from);
+                    row.CreateCell(2).SetCellValue(item.to);
+                    row.CreateCell(3).SetCellValue(item.durationstring);
+                    row.CreateCell(4).SetCellValue(item.talktimestring);
+                    row.CreateCell(5).SetCellValue(item.ringtimestring);
+                    row.CreateCell(6).SetCellValue(item.date);
+                    row.CreateCell(7).SetCellValue(item.starttimestring);
+                    row.CreateCell(8).SetCellValue(item.stoptimestring);
+                    row.CreateCell(9).SetCellValue(item.excelinorout);
+                    row.CreateCell(10).SetCellValue(item.excelstatus);
+                }
+
+                workbook.Write(fs);
+            }
+            using (var stream = new FileStream(Path.Combine(sWebRootFolder, sFileName), FileMode.Open))
+            {
+                await stream.CopyToAsync(memory);
+            }
+            memory.Position = 0;
+
+            StartTheThread(file);
+
+            return File(memory, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", sFileName);
+        }
+        [HttpPost("GetUserDetailTop")]
+        public async Task<IActionResult> GetUserDetailTop(string id, byte? _f)
+        {
+            var userId = User.Claims.FirstOrDefault(c => c.Type == JwtRegisteredClaimNames.Jti).Value;
+            Shared.Utilities.Results.ComplexTypes.Enums.DashboardFilter filter = (_f == null || _f == 0) ? Shared.Utilities.Results.ComplexTypes.Enums.DashboardFilter.MONTHLY : (Shared.Utilities.Results.ComplexTypes.Enums.DashboardFilter)_f;
+
+            var detail = await _postgreSqlService.GetCompanyPersonDetailTop(LoggedInUser(userId), id, filter);
+
+            if (detail.ResultStatus == ResultStatus.Success)
+            {
+                string _totalHourstotalcalltime = (int)detail.Data.totaltalktime.TotalHours < 10 ? "0" + (int)detail.Data.totaltalktime.TotalHours : ((int)detail.Data.totaltalktime.TotalHours).ToString();
+                string _minutestotalcalltime = detail.Data.totaltalktime.Minutes < 10 ? "0" + detail.Data.totaltalktime.Minutes : detail.Data.totaltalktime.Minutes.ToString();
+                string _secondstotalcalltime = detail.Data.totaltalktime.Seconds < 10 ? "0" + detail.Data.totaltalktime.Seconds : detail.Data.totaltalktime.Seconds.ToString();
+
+                return Ok(new
+                {
+                    detail.Data.numofcalls,
+                    detail.Data.numofanswered,
+                    detail.Data.numofmissed,
+                    totaltalktime = _totalHourstotalcalltime + ":" + _minutestotalcalltime + ":" + _secondstotalcalltime,
+                    totalminutes = (long)detail.Data.totaltalktime.TotalMinutes
+                });
+            }
+            else
+                return Ok(detail.Data);
+        }
+
+        [HttpGet("GetUserDetailTopSixCalls")]
+        public async Task<IActionResult> GetUserDetailTopSixCalls(string id, byte? _f)
+        {
+            var userId = User.Claims.FirstOrDefault(c => c.Type == JwtRegisteredClaimNames.Jti).Value;
+            Shared.Utilities.Results.ComplexTypes.Enums.DashboardFilter filter = (_f == null || _f == 0) ? Shared.Utilities.Results.ComplexTypes.Enums.DashboardFilter.MONTHLY : (Shared.Utilities.Results.ComplexTypes.Enums.DashboardFilter)_f;
+
+            var detail = await _postgreSqlService.GetCompanyPersonDetailTopSixConversationNumber(LoggedInUser(userId), id, filter);
+
+            if (detail.ResultStatus == ResultStatus.Success)
+            {
+                return Ok(PartialViewGen.GenerateCompanyUserDetailHtml(new CompanyUserDetailTopSixNumberModel
+                {
+                    DataList = detail.Data.DataList
+                }, _staticService));
+            }
+            else
+            {
+                return Ok(PartialViewGen.GenerateCompanyUserDetailHtml(new CompanyUserDetailTopSixNumberModel(), _staticService));
+            }
+        }
+        [HttpGet("GetUserDetailTopSixAnsweredCalls")]
+        public async Task<IActionResult> GetUserDetailTopSixAnsweredCalls(string id, byte? _f)
+        {
+            var userId = User.Claims.FirstOrDefault(c => c.Type == JwtRegisteredClaimNames.Jti).Value;
+            Shared.Utilities.Results.ComplexTypes.Enums.DashboardFilter filter = (_f == null || _f == 0) ? Shared.Utilities.Results.ComplexTypes.Enums.DashboardFilter.MONTHLY : (Shared.Utilities.Results.ComplexTypes.Enums.DashboardFilter)_f;
+
+            var detail = await _postgreSqlService.GetCompanyPersonDetailTopSixAnsweredNumber(LoggedInUser(userId), id, filter);
+
+            if (detail.ResultStatus == ResultStatus.Success)
+            {
+                return Ok(PartialViewGen.GenerateCompanyUserDetailTopSixNumberModel(new CompanyUserDetailTopSixNumberModel
+                {
+                    DataList = detail.Data.DataList
+                }, _staticService));
+            }
+            else
+            {
+                return Ok(PartialViewGen.GenerateCompanyUserDetailTopSixNumberModel(new CompanyUserDetailTopSixNumberModel(), _staticService));
+            }
+        }
 
 
+        [HttpGet("GetUserDetailTopMissedCalls")]
+        public async Task<IActionResult> GetUserDetailTopMissedCalls(string id, byte? _f)
+        {
+            var userId = User.Claims.FirstOrDefault(c => c.Type == JwtRegisteredClaimNames.Jti).Value;
+            Shared.Utilities.Results.ComplexTypes.Enums.DashboardFilter filter = (_f == null || _f == 0) ? Shared.Utilities.Results.ComplexTypes.Enums.DashboardFilter.MONTHLY : (Shared.Utilities.Results.ComplexTypes.Enums.DashboardFilter)_f;
+
+            var detail = await _postgreSqlService.GetCompanyPersonDetailTopSixMissedNumber(LoggedInUser(userId), id, filter);
+
+            if (detail.ResultStatus == ResultStatus.Success)
+            {
+                return Ok(PartialViewGen.GenerateCompanyUserDetailTopSixNumberHtml(new CompanyUserDetailTopSixNumberModel
+                {
+                    DataList = detail.Data.DataList
+                }, _staticService));
+            }
+            else
+            {
+                return Ok(PartialViewGen.GenerateCompanyUserDetailTopSixNumberModel(new CompanyUserDetailTopSixNumberModel(), _staticService));
+            }
+        }
         protected User LoggedInUser(string id) => _userManager.FindByIdAsync(id).Result;
         private Thread StartTheThread(FileInfo _file)
         {
