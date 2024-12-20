@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using CDR.API.Api.Model;
 using CDR.API.Api.Service.Interface;
+using CDR.API.Filters;
 using CDR.API.PartialViewGeneration;
 using CDR.Entities.Concrete;
 using CDR.Entities.Dtos;
@@ -1285,6 +1286,42 @@ namespace CDR.API.Controllers
             else
             {
                 return Ok(PartialViewGen.GenerateCompanyUserDetailTopSixNumberModel(new CompanyUserDetailTopSixNumberModel(), _staticService));
+            }
+        }
+
+        [HttpGet]
+        [Route("CompanyUserDetail/{id?}")]
+        
+        public async Task<IActionResult> UserDetail(string id)
+        {
+            var userId = User.Claims.FirstOrDefault(c => c.Type == JwtRegisteredClaimNames.Jti).Value;
+            if (string.IsNullOrWhiteSpace(id))
+            {
+                return Ok( new CompanyUserDetailModel
+                {
+                    ResultStatus = ResultStatus.Error,
+                    Message = _staticService.GetLocalization("DBO_KullaniciBulunamadi").Data
+                });
+            }
+
+            var detail = await _postgreSqlService.GetCompanyPersonDetailInformation(LoggedInUser(userId), id);
+
+            if (detail.ResultStatus == ResultStatus.Success && detail.Data != null && !string.IsNullOrWhiteSpace(detail.Data.dn))
+            {
+                return Ok( new CompanyUserDetailModel
+                {
+                    ResultStatus = ResultStatus.Success,
+                    Detail = detail.Data,
+                    User = LoggedInUser(userId)
+                });
+            }
+            else
+            {
+                return Ok(new CompanyUserDetailModel
+                {
+                    ResultStatus = ResultStatus.Error,
+                    Message = _staticService.GetLocalization("DBO_KullaniciBulunamadi").Data
+                });
             }
         }
         protected User LoggedInUser(string id) => _userManager.FindByIdAsync(id).Result;
