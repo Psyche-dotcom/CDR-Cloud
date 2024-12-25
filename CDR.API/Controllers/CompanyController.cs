@@ -1324,6 +1324,27 @@ namespace CDR.API.Controllers
                 });
             }
         }
+        [HttpGet("GetUserDetailTopSixTalkTime")]
+        public async Task<IActionResult> GetUserDetailTopSixTalkTime(string id, byte? _f)
+        {
+            var userId = User.Claims.FirstOrDefault(c => c.Type == JwtRegisteredClaimNames.Jti).Value;
+
+            Shared.Utilities.Results.ComplexTypes.Enums.DashboardFilter filter = (_f == null || _f == 0) ? Shared.Utilities.Results.ComplexTypes.Enums.DashboardFilter.MONTHLY : (Shared.Utilities.Results.ComplexTypes.Enums.DashboardFilter)_f;
+
+            var detail = await _postgreSqlService.GetCompanyPersonDetailTopSixTimeConversation(LoggedInUser(userId), id, filter);
+
+            if (detail.ResultStatus == ResultStatus.Success)
+            {
+                return Ok(PartialViewGen.GenerateCompanyUserDetailTopSixTimeHtml( new CompanyUserDetailTopSixTimeModel
+                {
+                    DataList = detail.Data.DataList
+                },_staticService));
+            }
+            else
+            {
+                return Ok(PartialViewGen.GenerateCompanyUserDetailTopSixTimeHtml( new CompanyUserDetailTopSixTimeModel(),_staticService));
+            }
+        }
         protected User LoggedInUser(string id) => _userManager.FindByIdAsync(id).Result;
         private Thread StartTheThread(FileInfo _file)
         {

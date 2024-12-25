@@ -887,11 +887,6 @@ namespace CDR.API.PartialViewGeneration
 
             return sb.ToString();
         }
-
-
-
-
-
         public static string GenerateSupportAddHtml(SupportAddDto model, IStaticService staticService, bool stateError)
         {
             var sb = new StringBuilder();
@@ -1643,6 +1638,60 @@ namespace CDR.API.PartialViewGeneration
 
             return sb.ToString();
         }
+        public static string GenerateCompanyUserDetailTopSixTimeHtml(CompanyUserDetailTopSixTimeModel model, IStaticService staticService)
+        {
+            var sb = new StringBuilder();
+
+            // Begin table
+            sb.AppendLine("<table class=\"last-call-statistic\">");
+            sb.AppendLine("<tbody>");
+
+            // Check if the model contains data
+            if (model.DataList != null && model.DataList.Count > 0)
+            {
+                foreach (var item in model.DataList)
+                {
+                    sb.AppendLine("<tr>");
+                    sb.AppendFormat("<td><strong>{0}</strong></td>", item.phonenumber);
+                    sb.AppendFormat("<td>{0}</td>", item.displayname);
+
+                    if (item.talkduration != TimeSpan.MinValue)
+                    {
+                        var totalHours = (int)item.talkduration.TotalHours < 10
+                            ? "0" + (int)item.talkduration.TotalHours
+                            : ((int)item.talkduration.TotalHours).ToString();
+                        var minutes = item.talkduration.Minutes < 10
+                            ? "0" + item.talkduration.Minutes
+                            : item.talkduration.Minutes.ToString();
+                        var seconds = item.talkduration.Seconds < 10
+                            ? "0" + item.talkduration.Seconds
+                            : item.talkduration.Seconds.ToString();
+
+                        sb.AppendFormat("<td>{0}:{1}:{2}</td>", totalHours, minutes, seconds);
+                    }
+                    else
+                    {
+                        sb.AppendLine("<td>-</td>");
+                    }
+
+                    sb.AppendLine("</tr>");
+                }
+            }
+            else
+            {
+                // No data found
+                sb.AppendLine("<tr>");
+                sb.AppendFormat("<td colspan=\"3\">{0}</td>", staticService.GetLocalization("CDR_VeriBulunamadi").Data);
+                sb.AppendLine("</tr>");
+            }
+
+            // End table
+            sb.AppendLine("</tbody>");
+            sb.AppendLine("</table>");
+
+            return sb.ToString();
+        }
+
 
         private static string GetFormattedDuration(TimeSpan duration)
         {
