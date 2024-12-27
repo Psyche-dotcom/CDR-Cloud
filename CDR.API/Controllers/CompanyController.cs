@@ -35,7 +35,7 @@ namespace CDR.API.Controllers
         private readonly IPostgreSqlService _postgreSqlService;
         private readonly IReportFilterService _reportFilterService;
         private readonly IWebHostEnvironment _env;
-
+        private readonly string _uploadfolder = "Upload";
 
         private readonly IStaticService _staticService;
 
@@ -60,6 +60,9 @@ namespace CDR.API.Controllers
             _postgreSqlService = postgreSqlService;
             _reportFilterService = reportFilterService;
             _env = env;
+            _uploadfolder = Environment.GetEnvironmentVariable("UPLOAD_FOLDER") ?? Path.Combine(Directory.GetCurrentDirectory(), "Upload");
+
+
         }
         [HttpGet("Trunk")]
 
@@ -654,7 +657,7 @@ namespace CDR.API.Controllers
         {
             var userId = User.Claims.FirstOrDefault(c => c.Type == JwtRegisteredClaimNames.Jti).Value;
 
-            string sWebRootFolder = Path.Combine(Directory.GetCurrentDirectory(), "Upload");
+            string sWebRootFolder =_uploadfolder;
             string sFileName = @"report-calls-" + string.Format("{0:ddMMyyyy}", DateTime.Now) + "-" + Shared.Utilities.Extensions.BaseExtensions.GetUniqueKey(10) + ".xlsx";
             FileInfo file = new FileInfo(Path.Combine(sWebRootFolder, sFileName));
             var memory = new MemoryStream();
