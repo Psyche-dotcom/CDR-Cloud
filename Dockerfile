@@ -7,11 +7,11 @@ ENV ASPNETCORE_URLS=http://+:5000
 EXPOSE 5000
 
 # Use the official ASP.NET Core SDK as a build image
-FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
+FROM mcr.microsoft.com/dotnet/sdk:6.0 AS build
 ARG BUILD_CONFIGURATION=Release
 WORKDIR /build
 
-# Copy the project files and restore dependencies
+# Restore and build dependencies
 COPY ["CDR.API/CDR.API.csproj", "CDR.API/"]
 COPY ["CDR.Data/CDR.Data.csproj", "CDR.Data/"]
 COPY ["CDR.Entities/CDR.Entities.csproj", "CDR.Entities/"]
@@ -19,23 +19,21 @@ COPY ["CDR.Services/CDR.Services.csproj", "CDR.Services/"]
 COPY ["CDR.Shared/CDR.Shared.csproj", "CDR.Shared/"]
 RUN dotnet restore "CDR.API/CDR.API.csproj"
 
-# Copy the rest of the files and build the project
+# Copy source code and build
 COPY . .
 WORKDIR "/build/CDR.API"
 RUN dotnet build "CDR.API.csproj" -c $BUILD_CONFIGURATION -o /app/build
 
-# Publish the project
+# Publish artifacts
 FROM build AS publish
 ARG BUILD_CONFIGURATION=Release
 RUN dotnet publish "CDR.API.csproj" -c $BUILD_CONFIGURATION -o /app/publish /p:UseAppHost=false
 
-# Create the final image
+# Final stage
 FROM base AS final
 WORKDIR /app
 COPY --from=publish /app/publish .
-
-COPY ./CDR.API/Upload /app/Upload
+COPY CDR.API/Upload /app/Upload
 
 ENV UPLOAD_FOLDER /app/Upload
-
 ENTRYPOINT ["dotnet", "CDR.API.dll"]
