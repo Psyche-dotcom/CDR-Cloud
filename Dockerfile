@@ -34,7 +34,7 @@ FROM base AS final
 WORKDIR /app
 COPY --from=publish /app/publish .
 
-COPY CDR.API/Upload /app/Upload
+COPY ./CDR.API/Upload /app/Upload
 
 ENV UPLOAD_FOLDER /app/Upload
 
