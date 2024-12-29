@@ -968,7 +968,7 @@ namespace CDR.API.Controllers
         public async Task<IActionResult> ExportCompanyPhonebook(string NameSurname, string Email, string Phone)
         {
             var userId = User.Claims.FirstOrDefault(c => c.Type == JwtRegisteredClaimNames.Jti).Value;
-            string sWebRootFolder = Path.Combine(_env.WebRootPath, "UploadExcel");
+            string sWebRootFolder = _uploadfolder;
             string sFileName = @"phone-book-" + string.Format("{0:ddMMyyyy}", DateTime.Now) + "-" + Shared.Utilities.Extensions.BaseExtensions.GetUniqueKey(10) + ".xlsx";
             FileInfo file = new FileInfo(Path.Combine(sWebRootFolder, sFileName));
             var memory = new MemoryStream();
