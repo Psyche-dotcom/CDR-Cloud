@@ -1143,7 +1143,7 @@ namespace CDR.API.Controllers
         public async Task<IActionResult> ExportCompanyUserDetaiReport(string id, byte f)
         {
             var userId = User.Claims.FirstOrDefault(c => c.Type == JwtRegisteredClaimNames.Jti).Value;
-            string sWebRootFolder = Path.Combine(_env.WebRootPath, "UploadExcel");
+            string sWebRootFolder = _uploadfolder;
             string sFileName = @"call-list-" + string.Format("{0:ddMMyyyyHHmmss}", DateTime.Now) + "-" + Shared.Utilities.Extensions.BaseExtensions.GetUniqueKey(10) + ".xlsx";
             FileInfo file = new FileInfo(sWebRootFolder);
             var memory = new MemoryStream();
