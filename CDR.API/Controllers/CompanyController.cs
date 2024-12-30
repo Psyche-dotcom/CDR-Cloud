@@ -965,7 +965,7 @@ namespace CDR.API.Controllers
         }
 
         [HttpGet("ExportCompanyPhonebook")]
-        public async Task<IActionResult> ExportCompanyPhonebook(string NameSurname, string Email, string Phone)
+        public async Task<IActionResult> ExportCompanyPhonebook(string? NameSurname, string? Email, string? Phone)
         {
             var userId = User.Claims.FirstOrDefault(c => c.Type == JwtRegisteredClaimNames.Jti).Value;
             string sWebRootFolder = _uploadfolder;
