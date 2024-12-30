@@ -530,20 +530,92 @@ namespace CDR.API.PartialViewGeneration
             sb.AppendFormat("<div class=\"row\"><div class=\"col-md-6\"><p class=\"title\">{0}:</p></div>", staticService.GetLocalization("CDR_To").Data);
             sb.AppendFormat("<div class=\"col-md-6\">{0}</div></div>", model.Detail.tablecolumnto);
             sb.AppendFormat("<div class=\"row\"><div class=\"col-md-6\"><p class=\"title\">{0}:</p></div>", staticService.GetLocalization("CDR_Duration").Data);
-            sb.AppendFormat("<div class=\"col-md-6\">{0}</div></div>", model.Detail.duration);
+            sb.AppendFormat("<div class=\"col-md-6\">{0}</div></div>", model.Detail.tablecolumnduration);
+
+
+            sb.AppendFormat("<div class=\"row\"><div class=\"col-md-6\"><p class=\"title\">{0}:</p></div>", staticService.GetLocalization("CDR_TalkTime").Data);
+            sb.AppendFormat("<div class=\"col-md-6\">{0}</div></div>", model.Detail.tablecolumntalktime);
+
+            sb.AppendFormat("<div class=\"row\"><div class=\"col-md-6\"><p class=\"title\">{0}:</p></div>", staticService.GetLocalization("CDR_RingTime").Data);
+            sb.AppendFormat("<div class=\"col-md-6\">{0}</div></div>", model.Detail.tablecolumnringtime);
+
+            sb.AppendFormat("<div class=\"row\"><div class=\"col-md-6\"><p class=\"title\">{0}:</p></div>", staticService.GetLocalization("CDR_Date").Data);
+            sb.AppendFormat("<div class=\"col-md-6\">{0}</div></div>", model.Detail.tablecolumndate);
+
+            sb.AppendFormat("<div class=\"row\"><div class=\"col-md-6\"><p class=\"title\">{0}:</p></div>", staticService.GetLocalization("CDR_StartTime").Data);
+            sb.AppendFormat("<div class=\"col-md-6\">{0}</div></div>", model.Detail.tablecolumnstarttime);
+
+            sb.AppendFormat("<div class=\"row\"><div class=\"col-md-6\"><p class=\"title\">{0}:</p></div>", staticService.GetLocalization("CDR_EndTime").Data);
+            sb.AppendFormat("<div class=\"col-md-6\">{0}</div></div>", model.Detail.tablecolumnstoptime);
+
+            sb.AppendFormat("<div class=\"row\"><div class=\"col-md-6\"><p class=\"title\">{0}:</p></div>", staticService.GetLocalization("CDR_InOrOut").Data);
+            sb.AppendFormat("<div class=\"col-md-6\">{0}</div></div>", model.Detail.tablecolumninorout);
+
+            sb.AppendFormat("<div class=\"row\"><div class=\"col-md-6\"><p class=\"title\">{0}:</p></div>", staticService.GetLocalization("CDR_Status").Data);
+            sb.AppendFormat("<div class=\"col-md-6\">{0}</div></div>", model.Detail.tablecolumnstatus);
 
             sb.AppendLine("</div>"); // close call-details tab
 
             // Sound Recording
-            sb.AppendLine("<div role=\"tabpanel\" class=\"tab-pane report-table\" id=\"sound-recording\">");
-            sb.AppendLine("<div class=\"recording-plyr\">");
-            sb.AppendLine("<div class=\"plyr\" id=\"player\" data-type=\"audio\">");
-            sb.AppendLine("<audio controls crossorigin playsinline id=\"audio-player\">");
-            sb.AppendFormat("<source src=\"/app-assets/audio/{0}\" type=\"audio/mpeg\" />",
-                CDR.Shared.Utilities.Extensions.BaseExtensions.PhotoTitle(model.Detail.from) + "-" +
-                CDR.Shared.Utilities.Extensions.BaseExtensions.PhotoTitle(model.Detail.to) + ".mp3");
-            sb.AppendLine("</audio>");
-            sb.AppendLine("</div></div></div>"); // close sound-recording tab
+            sb.AppendLine("<div role=\"tabpanel\" class=\"tab-pane\" id=\"sound-recording\">");
+
+            // Detail loading
+            sb.AppendLine("<div class=\"detail-loading\">");
+            sb.AppendLine("<div class=\"detail-loading-content\">");
+            sb.AppendLine("<img src=\"/app-assets/images/loading.gif\" style=\"width: 64px; height: 64px;\" />");
+            sb.AppendFormat("<p>{0}</p>", staticService.GetLocalization("CDR_Preparing").Data);
+            sb.AppendLine("<p id=\"xhrInfo\" class=\"text-center\"></p>");
+            sb.AppendLine("</div>");
+            sb.AppendLine("</div>");
+
+            // Waveaudio container
+            sb.AppendLine("<div class=\"waveaudio-container\">");
+            sb.AppendLine("<div id=\"waveform\"></div>");
+            sb.AppendLine("<div class=\"mt-1\">");
+
+            // Current time display
+            sb.AppendLine("<div class=\"time-item\" style=\"float:left\">");
+            sb.AppendLine("<p><span id=\"TimeCurrent\"></span></p>");
+            sb.AppendLine("</div>");
+
+            // Total time display
+            sb.AppendLine("<div class=\"time-item\" style=\"float:right\">");
+            sb.AppendLine("<p><span id=\"TimeTotal\"></span></p>");
+            sb.AppendLine("</div>");
+            sb.AppendLine("</div>");
+            sb.AppendLine("</div>");
+
+            // Controls section
+            sb.AppendLine("<div class=\"controls mt-5 text-center\">");
+
+            // Skip backward button
+            sb.AppendLine("<button class=\"btn\" style=\"background:none;\" onclick=\"audio.skipBackward()\">");
+            sb.AppendLine("<img src=\"/app-assets/images/icons/rewind.svg\" />");
+            sb.AppendLine("</button>");
+
+            // Play/pause button
+            sb.AppendLine("<button class=\"btn playpausebutton\" style=\"background:none;\" onclick=\"audio.playPause()\">");
+            sb.AppendLine("<img class=\"audio-play-button\" src=\"/app-assets/images/icons/play.svg\" />");
+            sb.AppendLine("<img class=\"audio-stop-button\" src=\"/app-assets/images/icons/pause.svg\" />");
+            sb.AppendLine("</button>");
+
+            // Skip forward button
+            sb.AppendLine("<button class=\"btn\" style=\"background:none;\" onclick=\"audio.skipForward()\">");
+            sb.AppendLine("<img src=\"/app-assets/images/icons/forward.svg\" />");
+            sb.AppendLine("</button>");
+
+            // Volume control
+            sb.AppendLine("<div class=\"volbox\" style=\"float:right; display:inline-block;\">");
+            sb.AppendFormat("{0}:<br />", staticService.GetLocalization("CDR_Volume").Data);
+            sb.AppendLine("<input id=\"volume\" type=\"range\" min=\"0\" max=\"1\" value=\"1\" step=\"0.1\">");
+            sb.AppendLine("</div>");
+            sb.AppendLine("</div>");
+
+            // Hidden audio URL
+            sb.AppendFormat("<span id=\"audiourl\" style=\"display:none\">{0}</span>",
+                model.Detail.AudioUrl.Replace('/', '\\').Replace("\"", "\\\\"));
+            sb.AppendLine("</div>");
+            // close sound-recording tab
 
             sb.AppendLine("</div>"); // close tab-content
             sb.AppendLine("</div>"); // close content
