@@ -36,7 +36,7 @@ namespace CDR.API.Controllers
                 Type = true
             });
         }
-       // [Authorize(AuthenticationSchemes = "Bearer")]
+        [Authorize(AuthenticationSchemes = "Bearer")]
         [HttpGet("DownloadWindows")]
         public IActionResult DownloadWindows()
         {
@@ -47,7 +47,7 @@ namespace CDR.API.Controllers
 
             return File(fs, "application/octet-stream", _downloadFiles.WindowsName);
         }
-        //[Authorize(AuthenticationSchemes = "Bearer")]
+        [Authorize(AuthenticationSchemes = "Bearer")]
         [HttpGet("DownloadDebian")]
         public IActionResult DownloadDebian()
         {
