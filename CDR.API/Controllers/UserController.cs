@@ -24,6 +24,7 @@ namespace CDR.API.Controllers
     public class UserController : ControllerBase
     {
         private readonly SignInManager<User> _signInManager;
+        private readonly IConfiguration _configuration;
         private readonly IMailService _mailService;
         private readonly ICityService _cityService;
         private readonly IUserActivePackagesService _userActivePackageService;
@@ -36,6 +37,7 @@ namespace CDR.API.Controllers
         private readonly IGenerateJwt _generateJwt;
 
         public UserController(SignInManager<User> signInManager,
+            IConfiguration configuration,
             IMailService mailService,
             ICityService cityService,
             IUserActivePackagesService userActivePackageService,
@@ -48,6 +50,7 @@ namespace CDR.API.Controllers
             IGenerateJwt generateJwt)
         {
             _signInManager = signInManager;
+            _configuration = configuration;
             _mailService = mailService;
             _cityService = cityService;
             _userActivePackageService = userActivePackageService;
@@ -73,7 +76,7 @@ namespace CDR.API.Controllers
             if (result.Succeeded)
             {
                 var token = await _userManager.GenerateEmailConfirmationTokenAsync(user);
-                var callback = $"http://localhost:3000/confirm_email?token={token}&&email={user.Email}";
+                var callback = $"{_configuration["Callbacks"]}/confirm_email?token={token}&&email={user.Email}";
 
 
                 var _result = _mailService.SendEmailConfirmEmailByResendClient(new EmailSendDto
@@ -237,7 +240,7 @@ namespace CDR.API.Controllers
 
                         var userPasswordChangeAjaxModel = JsonSerializer.Serialize(new UserPasswordChangeAjaxViewModel
                         {
-                            UserPasswordChangePartial = PartialViewGen.GeneratePasswordChangeHtml( userPasswordChangeDto,_staticService ,false),
+                            UserPasswordChangePartial = PartialViewGen.GeneratePasswordChangeHtml(userPasswordChangeDto, _staticService, false),
                             ResultStatus = ResultStatus.Success,
                             Message = _staticService.GetLocalization("DBO_ProfilSifreBilgileriDuzenlendi").Data,
                         });
@@ -255,7 +258,7 @@ namespace CDR.API.Controllers
                         var userPasswordChangeAjaxErrorModel = JsonSerializer.Serialize(new UserPasswordChangeAjaxViewModel
                         {
                             UserPasswordChangeDto = userPasswordChangeDto,
-                            UserPasswordChangePartial = PartialViewGen.GeneratePasswordChangeHtml(userPasswordChangeDto,_staticService,true)
+                            UserPasswordChangePartial = PartialViewGen.GeneratePasswordChangeHtml(userPasswordChangeDto, _staticService, true)
                         });
                         return Ok(userPasswordChangeAjaxErrorModel);
                     }
@@ -289,7 +292,7 @@ namespace CDR.API.Controllers
         [HttpGet("Timezone")]
         public async Task<IActionResult> Timezone()
         {
-            return Ok(PartialViewGen.GenerateUserTimezoneHtml(new UserTimezoneDto(),_staticService, false));
+            return Ok(PartialViewGen.GenerateUserTimezoneHtml(new UserTimezoneDto(), _staticService, false));
         }
 
         [Authorize(AuthenticationSchemes = "Bearer")]
@@ -302,8 +305,8 @@ namespace CDR.API.Controllers
 
                 decimal gmtValue = Convert.ToDecimal(gmt, new System.Globalization.CultureInfo("en-US"));
                 var userId = User.Claims.FirstOrDefault(c => c.Type == JwtRegisteredClaimNames.Jti).Value;
-              
-                var oldUser = await _userManager.FindByIdAsync(userId); 
+
+                var oldUser = await _userManager.FindByIdAsync(userId);
 
                 oldUser.GMT = gmtValue;
                 oldUser.Timezone = userTimezoneDto.Timezone;
@@ -313,7 +316,7 @@ namespace CDR.API.Controllers
                 {
                     var userTimezoneAjaxModel = JsonSerializer.Serialize(new UserTimezoneAjaxViewModel
                     {
-                        UserTimezonePartial =PartialViewGen.GenerateUserTimezoneHtml(userTimezoneDto,_staticService,false),
+                        UserTimezonePartial = PartialViewGen.GenerateUserTimezoneHtml(userTimezoneDto, _staticService, false),
                         ResultStatus = ResultStatus.Success,
                         Message = _staticService.GetLocalization("DBO_TimezoneBilgileriDuzenlendi").Data,
                     });
@@ -330,7 +333,7 @@ namespace CDR.API.Controllers
                     var userTimezoneAjaxErrorModel = JsonSerializer.Serialize(new UserTimezoneAjaxViewModel
                     {
                         UserTimezoneDto = userTimezoneDto,
-                        UserTimezonePartial =PartialViewGen.GenerateUserTimezoneHtml(userTimezoneDto, _staticService, true)
+                        UserTimezonePartial = PartialViewGen.GenerateUserTimezoneHtml(userTimezoneDto, _staticService, true)
                     });
                     return Ok(userTimezoneAjaxErrorModel);
                 }
@@ -367,8 +370,8 @@ namespace CDR.API.Controllers
                     LastName = user.LastName,
                     CompanyName = user.CompanyName
                 }, _staticService, false));
-                
-              
+
+
         }
 
         [Authorize(AuthenticationSchemes = "Bearer")]
@@ -395,7 +398,7 @@ namespace CDR.API.Controllers
                 {
                     var userProfileInformationAjaxModel = JsonSerializer.Serialize(new UserProfileInformationAjaxViewModel
                     {
-                        UserProfileInformationPartial = PartialViewGen.GenerateUserProfileHtml( userProfileInformatioDto,_staticService,false),
+                        UserProfileInformationPartial = PartialViewGen.GenerateUserProfileHtml(userProfileInformatioDto, _staticService, false),
                         ResultStatus = ResultStatus.Success,
                         Message = _staticService.GetLocalization("DBO_ProfilBilgileriDuzenlendi").Data,
                     });
@@ -462,9 +465,9 @@ namespace CDR.API.Controllers
                     Port = user.Port
                 }, _staticService, false
                 ));
-                
-                
-              
+
+
+
         }
 
         [Authorize(AuthenticationSchemes = "Bearer")]
@@ -481,7 +484,7 @@ namespace CDR.API.Controllers
                     userConnectionDetailDto.ModelError = connectionResult.Message + " /" + userConnectionDetailDto.IpAddress + ":" + userConnectionDetailDto.Port;
                     var userConnectionDetailAjaxModel = JsonSerializer.Serialize(new UserConnectionDetailAjaxViewModel
                     {
-                        UserConnectionDetailPartial = PartialViewGen.GenerateUserConnectionDetailHtml( userConnectionDetailDto,_staticService, true),
+                        UserConnectionDetailPartial = PartialViewGen.GenerateUserConnectionDetailHtml(userConnectionDetailDto, _staticService, true),
                         ResultStatus = ResultStatus.Error,
                         Message = connectionResult.Message,
                     });
@@ -539,7 +542,7 @@ namespace CDR.API.Controllers
                     {
                         ModelState.AddModelError("", error.Description);
                         userConnectionDetailDto.ModelError = error.Description;
-                       /* Log.Error("ConnectionDetail -> " + error.Description);*/
+                        /* Log.Error("ConnectionDetail -> " + error.Description);*/
                     }
 
                     var userConnectionDetailAjaxErrorModel = JsonSerializer.Serialize(new UserConnectionDetailAjaxViewModel
@@ -562,6 +565,109 @@ namespace CDR.API.Controllers
                 return Ok(userConnectionDetailAjaxModelStateErrorModel);
             }
         }
+        [HttpPost("ForgotPassword")]
+        public async Task<IActionResult> ForgotPassword(UserForgotPasswordDto forgotPasswordModel)
+        {
+            var response = new ResponseDto<string>();
+            if (ModelState.IsValid)
+            {
+                var user = await _userManager.FindByEmailAsync(forgotPasswordModel.Email);
+                if (user == null)
+                {
+                    response.StatusCode = 400;
+                    response.DisplayMessage = "Error";
+                    response.ErrorMessages = new List<string>() { _staticService.GetLocalization("DBO_EmaileAitKullaniciBulunamadi").Data };
+
+                    return BadRequest(response);
+                }
+
+                var token = await _userManager.GeneratePasswordResetTokenAsync(user);
+                var callback = $"{_configuration["Callbacks"]}/reset_password?token={token}&&email={user.Email}";
+
+
+
+                var _result = _mailService.SendForgotPasswordEmailByResendClient(new EmailSendDto
+                {
+                    Email = forgotPasswordModel.Email,
+                    Name = user.FirstName,
+                    Subject = _staticService.GetLocalization("CDR_CdrSifreDegisikligi").Data,
+                    Token = callback
+                });
+
+                ModelState.Clear();
+
+                if (_result.ResultStatus == ResultStatus.Error)
+                {
+                    response.StatusCode = 400;
+                    response.DisplayMessage = "Error";
+                    response.ErrorMessages = new List<string>() { _staticService.GetLocalization("CDR_SistemselHata").Data };
+                    return BadRequest(response);
+
+                }
+                response.StatusCode = 200;
+                response.DisplayMessage = "Success";
+                response.Result = _staticService.GetLocalization("CDR_SifreDegistirmeIstekOlustu").Data;
+
+                return Ok(response);
+
+            }
+            else
+            {
+                response.StatusCode = 400;
+                response.DisplayMessage = "Error";
+                response.ErrorMessages = new List<string>() { "Please provide a valid email address" };
+                return BadRequest(response);
+            }
+        }
+
+        [HttpPost("ResetPassword")]
+        public async Task<IActionResult> ResetPassword(UserResetPasswordModel resetPasswordModel)
+        {
+            var response = new ResponseDto<string>();
+            if (ModelState.IsValid)
+            {
+                var user = await _userManager.FindByEmailAsync(resetPasswordModel.Email);
+
+                if (user == null)
+                {
+                    response.StatusCode = 400;
+                    response.DisplayMessage = "Error";
+                    response.ErrorMessages = new List<string>() { _staticService.GetLocalization("DBO_BirHataOlustu").Data };
+
+                    return BadRequest(response);
+                  
+                }
+
+                var resetPassResult = await _userManager.ResetPasswordAsync(user, resetPasswordModel.Token, resetPasswordModel.Password);
+                if (!resetPassResult.Succeeded)
+                {
+                   
+
+                    
+                    foreach (var error in resetPassResult.Errors)
+                    {
+                        response.StatusCode = 400;
+                        response.DisplayMessage = "Error";
+                        response.ErrorMessages = new List<string>() { error.Description };
+                    }
+                    return BadRequest(response);
+                }
+                response.StatusCode = 200;
+                response.DisplayMessage = "Success";
+                response.Result ="Password Reset successfully, you can login with your new credential now";
+
+                return Ok(response);
+                
+            }
+            var errorMessages = ModelState.Values
+            .SelectMany(v => v.Errors)
+            .Select(e => e.ErrorMessage)
+            .ToList();
+            response.StatusCode = 400;
+            response.DisplayMessage = "Error";
+            response.ErrorMessages = new List<string>() { errorMessages[0] };
+            return BadRequest(response);
+        }
 
         private Result CheckPortIsOpen(string hostnameorIpAddress, int port)
         {
@@ -575,7 +681,7 @@ namespace CDR.API.Controllers
             catch (SocketException ex)
             {
                 Console.WriteLine($"Error connecting host:{ex.Message}");
-               /* Log.Error(ex, "Error Connecting Host");*/
+                /* Log.Error(ex, "Error Connecting Host");*/
                 return new Result(ResultStatus.Error, ex.Message);
             }
         }
