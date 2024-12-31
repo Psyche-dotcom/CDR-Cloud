@@ -94,6 +94,7 @@ builder.Services.AddAuthentication(option =>
 builder.Services.ConfigureWritable<SmtpSettings>(builder.Configuration.GetSection("SmtpSettings"));
 builder.Services.ConfigureWritable<IyzicoSettings>(builder.Configuration.GetSection("IyzicoSettings"));
 builder.Services.ConfigureWritable<CDR.Entities.Concrete.GlobalSettings>(builder.Configuration.GetSection("GlobalSettings"));
+builder.Services.ConfigureWritable<DownloadFiles>(builder.Configuration.GetSection("DownloadFiles"));
 
 builder.Services.LoadServices(builder.Configuration);
 builder.Services.AddCors(options =>

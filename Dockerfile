@@ -36,4 +36,9 @@ COPY --from=publish /app/publish .
 COPY CDR.API/Upload /app/Upload
 
 ENV UPLOAD_FOLDER /app/Upload
+
+COPY CDR.API/Setup /app/Setup
+
+ENV SETUP_FOLDER /app/Setup
+
 ENTRYPOINT ["dotnet", "CDR.API.dll"]
